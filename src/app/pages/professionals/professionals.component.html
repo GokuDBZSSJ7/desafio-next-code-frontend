@@ -1,0 +1,123 @@
+<section class="professionals">
+  <header class="toolbar">
+    <h2>Profissionais</h2>
+    <div class="tools">
+      <label class="search">
+        <input
+          type="search"
+          placeholder="Buscar por nome, especialidade ou contato..."
+          [formControl]="searchControl" />
+      </label>
+      <button class="btn btn-primary" type="button" (click)="startCreate()">Novo profissional</button>
+    </div>
+  </header>
+
+  <section class="panel">
+    <div class="panel__head">
+      <h3>Lista</h3>
+      <div class="panel__actions">
+        <button class="btn btn-outline" type="button" (click)="load(page)" [disabled]="loading">
+          {{ loading ? 'Atualizando...' : 'Atualizar' }}
+        </button>
+      </div>
+    </div>
+
+    <ng-container *ngIf="!loading && filteredItems?.length; else loadingOrEmpty">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Especialidade</th>
+              <th>Contato</th>
+              <th class="th-actions"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of filteredItems; trackBy: trackById">
+              <td [attr.data-label]="'Nome'">{{ p.name }}</td>
+              <td [attr.data-label]="'Especialidade'">{{ p.specialty || '—' }}</td>
+              <td [attr.data-label]="'Contato'">{{ p.contact_info || '—' }}</td>
+              <td class="actions" [attr.data-label]="'Ações'">
+                <button class="btn btn-outline" type="button" (click)="startEdit(p)">Editar</button>
+                <button class="btn btn-danger" type="button" (click)="remove(p)">Remover</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pager">
+        <button class="btn btn-outline" [disabled]="page<=1" (click)="load(page-1)">Anterior</button>
+        <div class="pageinfo">Página {{ page }} de {{ lastPage }}</div>
+        <button class="btn btn-outline" [disabled]="page>=lastPage" (click)="load(page+1)">Próxima</button>
+      </div>
+    </ng-container>
+
+    <ng-template #loadingOrEmpty>
+      <div *ngIf="loading" class="skeleton">
+        <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+          <span class="sk sk-lg"></span><span class="sk"></span><span class="sk"></span><span class="sk sk-btn"></span>
+        </div>
+      </div>
+      <div *ngIf="!loading && (!filteredItems || !filteredItems.length)" class="empty">
+        <p>Nenhum profissional encontrado.</p>
+        <button class="btn btn-primary" (click)="startCreate()">Cadastrar primeiro</button>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- Overlay + Drawer branco por cima do header -->
+  <div class="overlay" *ngIf="drawerOpen" (click)="closeForm()" aria-hidden="true"></div>
+
+  <aside class="drawer" [class.open]="drawerOpen" role="dialog" aria-modal="true" aria-label="Formulário de profissional">
+    <header class="drawer__head">
+      <h3 class="title">
+        {{ editing ? 'Editar profissional' : 'Novo profissional' }}
+        <small class="subtitle" *ngIf="!editing">Preencha os dados básicos</small>
+        <small class="subtitle" *ngIf="editing">Atualize apenas o necessário</small>
+      </h3>
+      <button class="icon close" type="button" (click)="closeForm()" aria-label="Fechar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="save()" class="drawer__form">
+      <div class="drawer__content">
+        <div class="inset">
+          <div class="form-grid form-compact">
+            <label class="field col-12">
+              <span>Nome</span>
+              <input class="input" formControlName="name" placeholder="Ex.: Dra. Ana Souza" autocomplete="name" />
+            </label>
+
+            <label class="field col-6">
+              <span>Especialidade</span>
+              <input class="input" formControlName="specialty" placeholder="Ex.: Fisioterapia" />
+            </label>
+
+            <label class="field col-6">
+              <span>Contato</span>
+              <input class="input" formControlName="contact_info" placeholder="(11) 99999-9999" autocomplete="tel" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer__actions">
+        <div class="actions-row">
+          <button class="btn btn-primary" type="submit" [disabled]="form.invalid">Salvar</button>
+          <button class="btn btn-outline" type="button" (click)="startCreate()">Limpar</button>
+          <button class="btn btn-ghost" type="button" (click)="closeForm()">Cancelar</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="drawer__edge"></div>
+  </aside>
+
+  <!-- FAB para mobile -->
+  <button class="fab" type="button" (click)="startCreate()" aria-label="Novo profissional">＋</button>
+</section>

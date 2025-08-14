@@ -1,0 +1,97 @@
+<section class="dashboard">
+  <header class="dash-header">
+    <h1>Dashboard</h1>
+    <div class="actions">
+      <time [attr.datetime]="today | date:'yyyy-MM-dd'">{{ today | date:'EEEE, d \'de\' MMMM' }}</time>
+      <button class="btn btn-outline"
+        (click)="load()"
+        [disabled]="loading"
+        [attr.aria-busy]="loading ? 'true' : null">
+  {{ loading ? 'Atualizando...' : 'Atualizar' }}
+</button>
+    </div>
+  </header>
+
+  <section class="kpis">
+    <article class="kpi">
+      <div class="kpi__label">Agendados hoje</div>
+      <div class="kpi__value">{{ scheduledToday }}</div>
+      <a routerLink="/services" class="kpi__link">Ver agendamentos</a>
+    </article>
+
+    <article class="kpi">
+      <div class="kpi__label">Próximos</div>
+      <div class="kpi__value">{{ upcomingCount }}</div>
+      <span class="kpi__hint">na primeira página</span>
+    </article>
+
+    <article class="kpi">
+      <div class="kpi__label">Concluídos</div>
+      <div class="kpi__value">{{ completedCount }}</div>
+      <span class="kpi__hint success">finalizados</span>
+    </article>
+
+    <article class="kpi">
+      <div class="kpi__label">Cancelados</div>
+      <div class="kpi__value">{{ cancelledCount }}</div>
+      <span class="kpi__hint danger">últimos registros</span>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="panel__head">
+      <h3>Próximos (primeira página)</h3>
+    </div>
+
+    <ng-container *ngIf="!loading && items?.length; else loadingOrEmpty">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Paciente</th>
+              <th>Profissional</th>
+              <th>Tipo</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of items; trackBy: trackByIdx">
+              <td [attr.data-label]="'Data'">{{ s.scheduled_date | date:'short' }}</td>
+              <td [attr.data-label]="'Paciente'">{{ s.patient?.name || '—' }}</td>
+              <td [attr.data-label]="'Profissional'">
+                {{ s.professional?.name || '—' }}
+                <ng-container *ngIf="s.professional?.specialty"> ({{ s.professional?.specialty }})</ng-container>
+              </td>
+              <td [attr.data-label]="'Tipo'">{{ s.service_type || '—' }}</td>
+              <td [attr.data-label]="'Status'">
+                <span class="badge"
+                  [ngClass]="{
+                    'scheduled': s.status === 'Agendado',
+                    'done': s.status === 'Concluído',
+                    'cancelled': s.status === 'Cancelado'
+                  }">{{ s.status }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <ng-template #loadingOrEmpty>
+      <div *ngIf="loading" class="skeleton">
+        <div class="skeleton-row" *ngFor="let i of [1,2,3,4,5]">
+          <span class="sk sk-sm"></span>
+          <span class="sk"></span>
+          <span class="sk"></span>
+          <span class="sk"></span>
+          <span class="sk sk-badge"></span>
+        </div>
+      </div>
+      <div *ngIf="!loading && (!items || !items.length)" class="empty">
+        <p>Nenhum agendamento encontrado.</p>
+        <a routerLink="/services" class="btn btn-primary">Criar/visualizar agendamentos</a>
+      </div>
+    </ng-template>
+  </section>
+</section>
